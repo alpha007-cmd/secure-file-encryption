@@ -2,6 +2,28 @@ import os
 import uuid
 import hashlib
 from werkzeug.utils import secure_filename
+import re
+
+def validate_password(password: str) -> tuple[bool, str]:
+    if not password:
+        return False, "Password is required."
+
+    if len(password) < 12:
+        return False, "Password must be at least 12 characters long."
+
+    if not re.search(r"[a-z]", password):
+        return False, "Password must contain at least one lowercase letter."
+
+    if not re.search(r"[A-Z]", password):
+        return False, "Password must contain at least one uppercase letter."
+
+    if not re.search(r"[0-9]", password):
+        return False, "Password must contain at least one number."
+
+    if not re.search(r"[!@#$%^&*()_+\-=\[\]{};':\"\\|,.<>\/?`~]", password):
+        return False, "Password must contain at least one special character (!@#$%^&* etc.)."
+
+    return True, ""
 
 
 def ensure_storage_directories(storage_dir: str) -> None:
