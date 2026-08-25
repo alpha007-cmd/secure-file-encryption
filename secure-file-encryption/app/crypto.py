@@ -1,9 +1,10 @@
 """
 Cryptographic primitives using the Python 'cryptography' library.
 
-- AES-256-GCM   : Symmetric encryption (file data)
+- AES-256-GCM   : Symmetric encryption (file data & key wrapping)
 - RSA-3072-OAEP : Asymmetric encryption (AES key protection)
 - SHA-256       : Integrity hashing
+- PBKDF2        : Password-based key derivation
 """
 
 import os
@@ -12,10 +13,11 @@ import hashlib
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives import hashes, serialization
+from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
 
 
 # ──────────────────────────────────────────────
-#  AES-256-GCM
+#  AES-256-GCM (Symmetric Encryption)
 # ──────────────────────────────────────────────
 
 def generate_aes_key() -> bytes:
@@ -31,19 +33,7 @@ def generate_nonce() -> bytes:
 def aes_encrypt(plaintext: bytes, key: bytes, nonce: bytes) -> bytes:
     """
     Encrypt data using AES-256-GCM.
-
-    AES-GCM provides:
-      - Confidentiality (encryption)
-      - Authentication  (built-in auth tag)
-      - Integrity       (any modification is detected)
-
-    Args:
-        plaintext: The raw file bytes to encrypt.
-        key:       32-byte AES key.
-        nonce:     12-byte unique nonce.
-
-    Returns:
-        Ciphertext with the 16-byte GCM auth tag appended.
+    Provides confidentiality, authentication, and integrity protection.
     """
     aesgcm = AESGCM(key)
     return aesgcm.encrypt(nonce, plaintext, None)
@@ -52,35 +42,21 @@ def aes_encrypt(plaintext: bytes, key: bytes, nonce: bytes) -> bytes:
 def aes_decrypt(ciphertext: bytes, key: bytes, nonce: bytes) -> bytes:
     """
     Decrypt data using AES-256-GCM.
-
-    Automatically verifies the authentication tag.
-    Raises cryptography.exceptions.InvalidTag if data was tampered with.
-
-    Args:
-        ciphertext: Encrypted bytes (includes GCM auth tag).
-        key:        32-byte AES key.
-        nonce:      12-byte nonce used during encryption.
-
-    Returns:
-        Original plaintext bytes.
-
-    Raises:
-        cryptography.exceptions.InvalidTag: Authentication failed.
+    Automatically verifies authentication tag.
+    Raises cryptography.exceptions.InvalidTag if data/tag was tampered with.
     """
     aesgcm = AESGCM(key)
     return aesgcm.decrypt(nonce, ciphertext, None)
 
 
 # ──────────────────────────────────────────────
-#  RSA-3072
+#  RSA-3072-OAEP (Asymmetric Key Protection)
 # ──────────────────────────────────────────────
 
 def generate_rsa_key_pair():
     """
     Generate an RSA-3072 key pair.
-
-    Returns:
-        (private_key, public_key) objects.
+    Returns: (private_key, public_key)
     """
     private_key = rsa.generate_private_key(
         public_exponent=65537,
@@ -91,7 +67,7 @@ def generate_rsa_key_pair():
 
 
 def serialize_private_key(private_key) -> bytes:
-    """Serialize RSA private key to PEM format (no password)."""
+    """Serialize RSA private key to PEM format."""
     return private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
         format=serialization.PrivateFormat.PKCS8,
@@ -119,16 +95,7 @@ def load_public_key_from_pem(pem_data: bytes):
 
 def rsa_encrypt_key(aes_key: bytes, public_key) -> bytes:
     """
-    Encrypt the AES key using RSA-3072-OAEP.
-
-    OAEP padding with SHA-256 and MGF1(SHA-256).
-
-    Args:
-        aes_key:    The 32-byte AES key to protect.
-        public_key: RSA public key object.
-
-    Returns:
-        RSA-encrypted AES key bytes.
+    Encrypt the AES key using RSA-3072-OAEP with SHA-256.
     """
     return public_key.encrypt(
         aes_key,
@@ -142,17 +109,7 @@ def rsa_encrypt_key(aes_key: bytes, public_key) -> bytes:
 
 def rsa_decrypt_key(encrypted_key: bytes, private_key) -> bytes:
     """
-    Decrypt the AES key using RSA-3072-OAEP.
-
-    Args:
-        encrypted_key: RSA-encrypted AES key bytes.
-        private_key:   RSA private key object.
-
-    Returns:
-        Original 32-byte AES key.
-
-    Raises:
-        ValueError: RSA decryption failed.
+    Decrypt the AES key using RSA-3072-OAEP with SHA-256.
     """
     return private_key.decrypt(
         encrypted_key,
@@ -169,13 +126,28 @@ def rsa_decrypt_key(encrypted_key: bytes, private_key) -> bytes:
 # ──────────────────────────────────────────────
 
 def calculate_sha256(data: bytes) -> str:
-    """
-    Calculate the SHA-256 hash of data.
-
-    Args:
-        data: Raw bytes.
-
-    Returns:
-        Hex-encoded SHA-256 digest string.
-    """
+    """Calculate the SHA-256 digest of data as a hex string."""
     return hashlib.sha256(data).hexdigest()
+
+
+# ──────────────────────────────────────────────
+#  Password Key Derivation (PBKDF2)
+# ──────────────────────────────────────────────
+
+def generate_salt() -> bytes:
+    """Generate a random 16-byte salt for password key derivation."""
+    return os.urandom(16)
+
+
+def derive_key_from_password(password: str, salt: bytes) -> bytes:
+    """
+    Derive a 32-byte AES key from a user password using PBKDF2-HMAC-SHA256
+    with 100,000 iterations to defend against brute-force attacks.
+    """
+    kdf = PBKDF2HMAC(
+        algorithm=hashes.SHA256(),
+        length=32,
+        salt=salt,
+        iterations=100_000,
+    )
+    return kdf.derive(password.encode("utf-8"))
