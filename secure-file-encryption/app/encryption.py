@@ -1,13 +1,3 @@
-"""
-High-level encryption and decryption workflows.
-
-Encrypt:
-    file bytes  →  AES-256-GCM encrypt  →  RSA-OAEP protect key  →  JSON package
-
-Decrypt:
-    JSON package  →  RSA-OAEP recover key  →  AES-256-GCM decrypt  →  file bytes
-"""
-
 import json
 import base64
 from typing import Tuple
@@ -15,206 +5,116 @@ from typing import Tuple
 from cryptography.exceptions import InvalidTag
 
 from app.crypto import (
-    generate_aes_key,
-    generate_nonce,
-    aes_encrypt,
-    aes_decrypt,
-    rsa_encrypt_key,
-    rsa_decrypt_key,
-    calculate_sha256,
+    generate_aes_key, generate_nonce, aes_encrypt, aes_decrypt,
+    rsa_encrypt_key, rsa_decrypt_key, calculate_sha256,
+    generate_salt, derive_key_from_password  # NEW IMPORTS
 )
 from app.key_manager import load_public_key, load_private_key
 
 
-def encrypt_file(file_data: bytes, filename: str, keys_dir: str) -> Tuple[str, dict]:
-    """
-    Encrypt a file using hybrid cryptography.
-
-    Steps:
-        1. Read file data.
-        2. Generate random AES-256 key (32 bytes).
-        3. Generate random 12-byte nonce.
-        4. Encrypt file with AES-256-GCM.
-        5. Calculate SHA-256 of original file.
-        6. Encrypt AES key with RSA-3072-OAEP.
-        7. Build JSON encrypted package.
-
-    Args:
-        file_data: Raw bytes of the uploaded file.
-        filename:  Original filename.
-        keys_dir:  Path to the keys directory.
-
-    Returns:
-        (package_json_string, metadata_dict)
-    """
-
-    # Step 2 – Generate AES-256 key
+def encrypt_file(file_data: bytes, filename: str, keys_dir: str, password: str) -> Tuple[str, dict]:
+    # 1. AES Encrypt the file
     aes_key = generate_aes_key()
-
-    # Step 3 – Generate nonce
     nonce = generate_nonce()
-
-    # Step 4 – AES-256-GCM encrypt
     ciphertext = aes_encrypt(file_data, aes_key, nonce)
-
-    # Step 5 – SHA-256 of plaintext
     sha256_hash = calculate_sha256(file_data)
 
-    # Step 6 – RSA-OAEP protect AES key
+    # 2. RSA Protect the AES key (Assignment requirement)
     public_key = load_public_key(keys_dir)
-    encrypted_aes_key = rsa_encrypt_key(aes_key, public_key)
+    rsa_encrypted_aes_key = rsa_encrypt_key(aes_key, public_key)
 
-    # Step 7 – Build encrypted package
+    # 3. PASSWORD LOCK: Encrypt the RSA block with the user's password
+    salt = generate_salt()
+    pwd_key = derive_key_from_password(password, salt)
+    pwd_nonce = generate_nonce()
+    # AES-GCM encrypts the RSA key using the password-derived key
+    locked_aes_key = aes_encrypt(rsa_encrypted_aes_key, pwd_key, pwd_nonce)
+
+    # 4. Build Package
     package = {
-        "version": 1,
+        "version": 2,
         "algorithm": "AES-256-GCM",
-        "key_protection": "RSA-3072-OAEP",
+        "key_protection": "RSA-3072-OAEP + PBKDF2-Password",
         "original_filename": filename,
         "original_size": len(file_data),
         "nonce": base64.b64encode(nonce).decode("utf-8"),
-        "encrypted_aes_key": base64.b64encode(encrypted_aes_key).decode("utf-8"),
+        "salt": base64.b64encode(salt).decode("utf-8"),
+        "pwd_nonce": base64.b64encode(pwd_nonce).decode("utf-8"),
+        "locked_aes_key": base64.b64encode(locked_aes_key).decode("utf-8"),
         "ciphertext": base64.b64encode(ciphertext).decode("utf-8"),
         "sha256": sha256_hash,
     }
-
-    package_json = json.dumps(package, indent=2)
 
     metadata = {
         "original_filename": filename,
         "original_size": len(file_data),
         "algorithm": "AES-256-GCM",
-        "key_protection": "RSA-3072-OAEP",
+        "key_protection": "RSA-3072 + Password",
         "sha256": sha256_hash,
     }
 
-    return package_json, metadata
+    return json.dumps(package, indent=2), metadata
 
 
-def decrypt_file(package_data: bytes, keys_dir: str) -> Tuple[bytes, dict]:
-    """
-    Decrypt an encrypted package using hybrid cryptography.
-
-    Steps:
-        1. Parse JSON package.
-        2. Decode Base64 fields.
-        3. RSA-OAEP decrypt the AES key.
-        4. AES-256-GCM decrypt + authenticate.
-        5. Calculate SHA-256 of decrypted data.
-        6. Compare SHA-256 with stored hash.
-        7. Return plaintext only if all checks pass.
-
-    Args:
-        package_data: Raw bytes of the uploaded .enc JSON file.
-        keys_dir:     Path to the keys directory.
-
-    Returns:
-        (decrypted_bytes, metadata_dict)
-
-    Raises:
-        ValueError: If package is invalid or integrity check fails.
-        InvalidTag: If AES-GCM authentication fails (tampering detected).
-    """
-
-    # Step 1 – Parse JSON
+def decrypt_file(package_data: bytes, keys_dir: str, password: str) -> Tuple[bytes, dict]:
     try:
         package = json.loads(package_data.decode("utf-8"))
-    except (json.JSONDecodeError, UnicodeDecodeError):
+    except Exception:
         raise ValueError("Invalid encrypted package: not valid JSON.")
 
-    # Validate required fields
-    required = [
-        "version", "algorithm", "key_protection",
-        "original_filename", "nonce", "encrypted_aes_key",
-        "ciphertext", "sha256",
-    ]
-    for field in required:
-        if field not in package:
-            raise ValueError(f"Invalid encrypted package: missing '{field}'.")
-
-    if package["algorithm"] != "AES-256-GCM":
-        raise ValueError(f"Unsupported algorithm: {package['algorithm']}")
-
-    if package["key_protection"] != "RSA-3072-OAEP":
-        raise ValueError(f"Unsupported key protection: {package['key_protection']}")
-
-    # Step 2 – Decode Base64
     try:
         nonce = base64.b64decode(package["nonce"])
-        encrypted_aes_key = base64.b64decode(package["encrypted_aes_key"])
+        salt = base64.b64decode(package["salt"])
+        pwd_nonce = base64.b64decode(package["pwd_nonce"])
+        locked_aes_key = base64.b64decode(package["locked_aes_key"])
         ciphertext = base64.b64decode(package["ciphertext"])
+        stored_sha256 = package["sha256"]
     except Exception:
         raise ValueError("Invalid encrypted package: Base64 decoding failed.")
 
-    stored_sha256 = package["sha256"]
+    # 1. PASSWORD UNLOCK: Attempt to decrypt the RSA block
+    pwd_key = derive_key_from_password(password, salt)
+    try:
+        rsa_encrypted_aes_key = aes_decrypt(locked_aes_key, pwd_key, pwd_nonce)
+    except InvalidTag:
+        raise ValueError("INCORRECT PASSWORD: The package is valid, but the password provided is incorrect.")
 
-    # Step 3 – RSA-OAEP decrypt AES key
+    # 2. RSA Decrypt the AES key
     try:
         private_key = load_private_key(keys_dir)
-        aes_key = rsa_decrypt_key(encrypted_aes_key, private_key)
+        aes_key = rsa_decrypt_key(rsa_encrypted_aes_key, private_key)
     except Exception:
-        raise ValueError(
-            "RSA decryption failed. The file may have been encrypted "
-            "with a different RSA key pair."
-        )
+        raise ValueError("RSA decryption failed. Server key mismatch.")
 
-    # Step 4 – AES-256-GCM decrypt (authenticates automatically)
+    # 3. AES Decrypt the file
     try:
         plaintext = aes_decrypt(ciphertext, aes_key, nonce)
     except InvalidTag:
-        raise ValueError(
-            "INTEGRITY CHECK FAILED\n\n"
-            "AES-GCM authentication failed.\n"
-            "The encrypted file may have been modified or corrupted.\n"
-            "Decryption has been aborted."
-        )
+        raise ValueError("INTEGRITY CHECK FAILED\n\nAES-GCM authentication failed. File tampered.")
 
-    # Step 5 – Calculate SHA-256 of decrypted data
+    # 4. SHA-256 Check
     decrypted_sha256 = calculate_sha256(plaintext)
-
-    # Step 6 – Compare hashes
     sha256_match = decrypted_sha256 == stored_sha256
+
+    if not sha256_match:
+        raise ValueError("SHA-256 MISMATCH. File corrupted.")
 
     metadata = {
         "original_filename": package.get("original_filename", "unknown"),
         "original_size": package.get("original_size", len(plaintext)),
         "algorithm": package["algorithm"],
         "key_protection": package["key_protection"],
-        "stored_sha256": stored_sha256,
-        "decrypted_sha256": decrypted_sha256,
-        "sha256_match": sha256_match,
         "aes_auth": "VALID",
-        "integrity": "VERIFIED" if sha256_match else "SHA-256 MISMATCH",
+        "integrity": "VERIFIED"
     }
-
-    if not sha256_match:
-        raise ValueError(
-            "SHA-256 MISMATCH\n\n"
-            f"Expected: {stored_sha256}\n"
-            f"Got:      {decrypted_sha256}\n"
-            "The file content does not match the original."
-        )
 
     return plaintext, metadata
 
-
+# IMPORTANT: Update create_tampered_package to handle the new version format
 def create_tampered_package(package_data: bytes) -> bytes:
-    """
-    Create a tampered version of an encrypted package for demonstration.
-
-    Modifies one byte of the ciphertext so AES-GCM authentication will fail.
-
-    Args:
-        package_data: Valid encrypted package JSON bytes.
-
-    Returns:
-        Tampered package JSON bytes.
-    """
     package = json.loads(package_data.decode("utf-8"))
-
-    # Decode ciphertext, flip one byte, re-encode
     ct_bytes = bytearray(base64.b64decode(package["ciphertext"]))
     if len(ct_bytes) > 0:
-        ct_bytes[0] ^= 0xFF  # Flip all bits of the first byte
+        ct_bytes[0] ^= 0xFF
     package["ciphertext"] = base64.b64encode(bytes(ct_bytes)).decode("utf-8")
-
     return json.dumps(package, indent=2).encode("utf-8")
