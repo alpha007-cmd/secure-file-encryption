@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block content %}
+
+{% if mode == "encrypt" %}
+<!-- ─── Encryption Success ─── -->
+<section class="result-section result-success">
+    <div class="result-icon">✅</div>
+    <h1>Encryption Successful</h1>
+
+    <div class="result-details">
+        <div class="detail-row">
+            <span class="detail-label">File:</span>
+            <span class="detail-value">{{ meta.original_filename }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Original Size:</span>
+            <span class="detail-value">{{ meta.formatted_original_size }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Encryption:</span>
+            <span class="detail-value">
+                <span class="badge">{{ meta.algorithm }}</span>
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Key Protection:</span>
+            <span class="detail-value">
+                <span class="badge badge-accent">{{ meta.key_protection }}</span>
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">SHA-256:</span>
+            <span class="detail-value hash-value">{{ meta.sha256 }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value">
+                <span class="status-badge status-secure">🔒 SECURE</span>
+            </span>
+        </div>
+    </div>
+
+    <a href="{{ url_for('main.download_encrypted', filename=meta.enc_filename) }}"
+       class="btn btn-primary btn-large">
+        ⬇️ Download Encrypted File
+    </a>
+    <a href="{{ url_for('main.encrypt_page') }}" class="btn btn-secondary">
+        Encrypt Another File
+    </a>
+</section>
+
+
+{% elif mode == "decrypt" %}
+<!-- ─── Decryption Success ─── -->
+<section class="result-section result-success">
+    <div class="result-icon">✅</div>
+    <h1>Decryption Successful</h1>
+
+    <div class="result-details">
+        <div class="detail-row">
+            <span class="detail-label">File:</span>
+            <span class="detail-value">{{ meta.original_filename }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Size:</span>
+            <span class="detail-value">{{ meta.formatted_size }}</span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">AES Authentication:</span>
+            <span class="detail-value">
+                <span class="status-badge status-valid">✅ {{ meta.aes_auth }}</span>
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">SHA-256 Match:</span>
+            <span class="detail-value">
+                <span class="status-badge status-valid">✅ MATCH</span>
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Integrity:</span>
+            <span class="detail-value">
+                <span class="status-badge status-verified">🛡️ {{ meta.integrity }}</span>
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value">
+                <span class="status-badge status-safe">✅ SAFE</span>
+            </span>
+        </div>
+    </div>
+
+    <a href="{{ url_for('main.download_decrypted', filename=meta.dec_filename) }}"
+       class="btn btn-success btn-large">
+        ⬇️ Download Decrypted File
+    </a>
+    <a href="{{ url_for('main.decrypt_page') }}" class="btn btn-secondary">
+        Decrypt Another File
+    </a>
+</section>
+
+
+{% elif mode == "tamper_detected" %}
+<!-- ─── Tampering Detected (Demo) ─── -->
+<section class="result-section result-danger">
+    <div class="result-icon">🚨</div>
+    <h1>Tampering Detected!</h1>
+    <p class="result-subtitle">Security demonstration successful</p>
+
+    <div class="result-details">
+        <div class="detail-row">
+            <span class="detail-label">AES-GCM Auth:</span>
+            <span class="detail-value">
+                <span class="status-badge status-failed">❌ FAILED</span>
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Integrity:</span>
+            <span class="detail-value">
+                <span class="status-badge status-failed">❌ FAILED</span>
+            </span>
+        </div>
+        <div class="detail-row">
+            <span class="detail-label">Decryption:</span>
+            <span class="detail-value">
+                <span class="status-badge status-failed">🛑 ABORTED</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="error-detail">
+        <h3>What happened:</h3>
+        <p>One byte of the ciphertext was modified. AES-GCM detected the modification
+           and refused to decrypt the data. <strong>No output file was created.</strong></p>
+        <pre>{{ error }}</pre>
+    </div>
+
+    <a href="{{ url_for('main.security_page') }}" class="btn btn-primary">
+        ← Back to Security Demo
+    </a>
+</section>
+
+
+{% elif mode == "tamper_failed" %}
+<!-- ─── Integrity Check Failed (Real upload) ─── -->
+<section class="result-section result-danger">
+    <div class="result-icon">🚨</div>
+    <h1>INTEGRITY CHECK FAILED</h1>
+
+    <div class="result-details">
+        <div class="detail-row">
+            <span class="detail-label">Status:</span>
+            <span class="detail-value">
+                <span class="status-badge status-failed">❌ DECRYPTION ABORTED</span>
+            </span>
+        </div>
+    </div>
+
+    <div class="error-detail">
+        <pre>{{ error }}</pre>
+        <p>The encrypted file may have been modified or corrupted.
+           No decrypted output was produced.</p>
+    </div>
+
+    <a href="{{ url_for('main.decrypt_page') }}" class="btn btn-primary">
+        Try Another File
+    </a>
+</section>
+
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="page-header">
+    <h1>🛡️ Security Architecture</h1>
+    <p>How hybrid encryption protects your files.</p>
+</section>
+
+<!-- Architecture Diagram -->
+<section class="architecture">
+    <h2>Encryption Flow</h2>
+    <div class="diagram">
+<pre class="diagram-pre">
+                    RSA-3072
+                   Public Key
+                       │
+                       ▼
+                Encrypt AES Key
+                       │
+                       ▼
+ Original File ──► AES-256-GCM ──► Ciphertext
+                       │
+                       ▼
+                 Authentication
+                    Tag (GCM)
+                       │
+                       ▼
+                Encrypted Package
+                  (.enc file)
+</pre>
+    </div>
+</section>
+
+<!-- Explanations -->
+<section class="explanations">
+    <div class="explanation-grid">
+        <div class="explanation-card">
+            <h3>🔑 AES-256-GCM</h3>
+            <p><strong>Purpose:</strong> Encrypts the actual file data.</p>
+            <p><strong>Why:</strong> Symmetric encryption is fast and efficient for
+               large amounts of data.</p>
+            <p><strong>Bonus:</strong> GCM mode provides built-in authentication,
+               meaning any modification is detected automatically.</p>
+        </div>
+
+        <div class="explanation-card">
+            <h3>🔐 RSA-3072-OAEP</h3>
+            <p><strong>Purpose:</strong> Protects the AES encryption key.</p>
+            <p><strong>Why:</strong> Asymmetric encryption is ideal for protecting
+               small pieces of data like encryption keys.</p>
+            <p><strong>OAEP padding</strong> with SHA-256 provides secure,
+               randomized encryption of the key.</p>
+        </div>
+
+        <div class="explanation-card">
+            <h3>#️⃣ SHA-256</h3>
+            <p><strong>Purpose:</strong> Additional integrity verification.</p>
+            <p><strong>Why:</strong> Provides an independent hash comparison
+               between the original and decrypted file to confirm data integrity.</p>
+        </div>
+
+        <div class="explanation-card">
+            <h3>🔄 Hybrid Cryptography</h3>
+            <p><strong>AES</strong> = Fast file encryption</p>
+            <p><strong>RSA</strong> = Secure key protection</p>
+            <p><strong>Together</strong> = Best of both worlds — speed of symmetric
+               encryption with the key-management advantages of asymmetric encryption.</p>
+        </div>
+    </div>
+</section>
+
+<!-- Tampering Demonstration -->
+<section class="demo-section">
+    <h2>🧪 Tampering Demonstration</h2>
+    <p>Upload an encrypted <code>.enc</code> file. The system will modify one byte of the
+       ciphertext and attempt decryption. AES-GCM will detect the modification and
+       refuse to decrypt.</p>
+
+    <div class="demo-flow">
+        <div class="demo-step">Encrypted File</div>
+        <div class="demo-arrow">→</div>
+        <div class="demo-step demo-tamper">Modify 1 Byte</div>
+        <div class="demo-arrow">→</div>
+        <div class="demo-step">Attempt Decrypt</div>
+        <div class="demo-arrow">→</div>
+        <div class="demo-step demo-fail">❌ AUTH FAILED</div>
+    </div>
+
+    <form method="POST" action="{{ url_for('main.demo_tamper') }}" enctype="multipart/form-data" id="tamperForm">
+        <div class="upload-area" id="dropZoneTamper">
+            <div class="upload-icon">🧪</div>
+            <p class="upload-text">Upload an .enc file for tampering demo</p>
+            <input type="file" name="file" id="tamperFileInput" class="file-input" accept=".enc" required>
+        </div>
+
+        <div id="tamperFileInfo" class="file-info" style="display: none;">
+            <span id="tamperFileName"></span>
+        </div>
+
+        <button type="submit" class="btn btn-danger btn-large" id="tamperBtn" disabled>
+            🧪 Run Tampering Test
+        </button>
+    </form>
+</section>
+
+<!-- Comparison -->
+<section class="comparison-section">
+    <h2>Normal vs Tampered</h2>
+    <div class="comparison-grid">
+        <div class="comparison-card comparison-ok">
+            <h3>✅ Normal File</h3>
+            <ul>
+                <li>Original → Encrypt → Decrypt</li>
+                <li>AES-GCM Authentication: <strong>VALID</strong></li>
+                <li>SHA-256: <strong>MATCH</strong></li>
+                <li>Integrity: <strong>VERIFIED</strong></li>
+                <li>File restored successfully</li>
+            </ul>
+        </div>
+        <div class="comparison-card comparison-bad">
+            <h3>❌ Tampered File</h3>
+            <ul>
+                <li>Encrypted file modified by attacker</li>
+                <li>AES-GCM Authentication: <strong>FAILED</strong></li>
+                <li>Integrity: <strong>FAILED</strong></li>
+                <li>Decryption: <strong>ABORTED</strong></li>
+                <li><strong>No output file produced</strong></li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

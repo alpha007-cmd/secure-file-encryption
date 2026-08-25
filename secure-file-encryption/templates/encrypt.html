@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="page-header">
+    <h1>🔐 Encrypt File</h1>
+    <p>Select a file to encrypt using AES-256-GCM with RSA-3072 key protection.</p>
+</section>
+
+<div class="upload-section">
+    <form method="POST" enctype="multipart/form-data" id="encryptForm">
+        <div class="upload-area" id="dropZone">
+            <div class="upload-icon">📁</div>
+            <p class="upload-text">Drag & drop a file here, or click to browse</p>
+            <p class="upload-hint">Maximum file size: 50 MB</p>
+            <input type="file" name="file" id="fileInput" class="file-input" required>
+        </div>
+
+        <div id="fileInfo" class="file-info" style="display: none;">
+            <span id="fileName"></span>
+            <span id="fileSize"></span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-large" id="encryptBtn" disabled>
+            🔐 Encrypt File
+        </button>
+    </form>
+</div>
+
+<div class="info-box">
+    <h3>What happens during encryption:</h3>
+    <ol>
+        <li>A random <strong>AES-256 key</strong> (32 bytes) is generated</li>
+        <li>A random <strong>12-byte nonce</strong> is generated</li>
+        <li>Your file is encrypted using <strong>AES-256-GCM</strong></li>
+        <li><strong>SHA-256 hash</strong> of the original file is calculated</li>
+        <li>The AES key is encrypted using <strong>RSA-3072-OAEP</strong></li>
+        <li>Everything is packaged into a secure <strong>.enc</strong> file</li>
+    </ol>
+</div>
+
+{% endblock %}

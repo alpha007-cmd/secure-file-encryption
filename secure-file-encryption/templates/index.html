@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Hero Section -->
+<section class="hero">
+    <h1>SECURE FILE VAULT</h1>
+    <p class="hero-subtitle">Hybrid Encryption</p>
+    <div class="hero-badges">
+        <span class="badge">AES-256-GCM</span>
+        <span class="badge badge-accent">RSA-3072-OAEP</span>
+        <span class="badge">SHA-256</span>
+    </div>
+    <p class="hero-desc">Protect your files with modern cryptography.</p>
+</section>
+
+<!-- Feature Cards -->
+<section class="cards">
+    <a href="{{ url_for('main.encrypt_page') }}" class="card">
+        <div class="card-icon">🔐</div>
+        <h3>Encrypt File</h3>
+        <p>Protect a file using AES-256-GCM symmetric encryption with RSA-3072 key protection.</p>
+    </a>
+
+    <a href="{{ url_for('main.decrypt_page') }}" class="card">
+        <div class="card-icon">🔓</div>
+        <h3>Decrypt File</h3>
+        <p>Restore an encrypted file securely with full integrity verification.</p>
+    </a>
+
+    <a href="{{ url_for('main.security_page') }}" class="card">
+        <div class="card-icon">🛡️</div>
+        <h3>Security</h3>
+        <p>Learn how hybrid encryption works and see a tampering demonstration.</p>
+    </a>
+</section>
+
+<!-- How It Works -->
+<section class="how-it-works">
+    <h2>How It Works</h2>
+    <div class="steps">
+        <div class="step">
+            <div class="step-num">1</div>
+            <h4>Upload File</h4>
+            <p>Select any file to encrypt</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+            <div class="step-num">2</div>
+            <h4>AES-256-GCM</h4>
+            <p>File encrypted with random key</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+            <div class="step-num">3</div>
+            <h4>RSA-3072</h4>
+            <p>AES key protected by RSA</p>
+        </div>
+        <div class="step-arrow">→</div>
+        <div class="step">
+            <div class="step-num">4</div>
+            <h4>Secure Package</h4>
+            <p>Download encrypted package</p>
+        </div>
+    </div>
+</section>
+
+{% endblock %}

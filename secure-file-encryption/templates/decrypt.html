@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block content %}
+
+<section class="page-header">
+    <h1>🔓 Decrypt File</h1>
+    <p>Upload an encrypted package (.enc) to decrypt and verify integrity.</p>
+</section>
+
+<div class="upload-section">
+    <form method="POST" enctype="multipart/form-data" id="decryptForm">
+        <div class="upload-area" id="dropZone">
+            <div class="upload-icon">📦</div>
+            <p class="upload-text">Drag & drop an .enc file here, or click to browse</p>
+            <p class="upload-hint">Upload the encrypted package you received</p>
+            <input type="file" name="file" id="fileInput" class="file-input" accept=".enc" required>
+        </div>
+
+        <div id="fileInfo" class="file-info" style="display: none;">
+            <span id="fileName"></span>
+            <span id="fileSize"></span>
+        </div>
+
+        <button type="submit" class="btn btn-success btn-large" id="decryptBtn" disabled>
+            🔓 Decrypt File
+        </button>
+    </form>
+</div>
+
+<div class="info-box">
+    <h3>What happens during decryption:</h3>
+    <ol>
+        <li>The encrypted package is <strong>parsed</strong></li>
+        <li>The AES key is recovered using <strong>RSA-3072 private key</strong></li>
+        <li><strong>AES-GCM authentication</strong> verifies the data is untampered</li>
+        <li>The file is <strong>decrypted</strong></li>
+        <li><strong>SHA-256</strong> is recalculated and compared</li>
+        <li>Only if all checks pass is the file made available</li>
+    </ol>
+</div>
+
+{% endblock %}
