@@ -4,20 +4,32 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Secure File Vault</title>
+    <!-- Google Fonts for Tech UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
+    <div class="bg-effects">
+        <div class="glow-blob left"></div>
+        <div class="glow-blob right"></div>
+    </div>
+
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <a href="{{ url_for('main.index') }}" class="nav-brand">
-                🔐 Secure File Vault
+                <i class="fa-solid fa-shield-halved"></i> SECURE FILE VAULT
             </a>
             <div class="nav-links">
-                <a href="{{ url_for('main.index') }}">Home</a>
-                <a href="{{ url_for('main.encrypt_page') }}">Encrypt</a>
-                <a href="{{ url_for('main.decrypt_page') }}">Decrypt</a>
-                <a href="{{ url_for('main.security_page') }}">Security</a>
+                <a href="{{ url_for('main.index') }}" class="{{ 'active' if request.endpoint == 'main.index' else '' }}">Home</a>
+                <a href="{{ url_for('main.encrypt_page') }}" class="{{ 'active' if request.endpoint in ['main.encrypt_page', 'main.encrypt_action'] else '' }}">Encrypt</a>
+                <a href="{{ url_for('main.decrypt_page') }}" class="{{ 'active' if request.endpoint in ['main.decrypt_page', 'main.decrypt_action'] else '' }}">Decrypt</a>
+                <a href="{{ url_for('main.security_page') }}" class="{{ 'active' if request.endpoint == 'main.security_page' else '' }}">Security</a>
             </div>
         </div>
     </nav>
@@ -29,10 +41,10 @@
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category }}">
                         <span class="alert-icon">
-                            {% if category == 'error' %}⚠️{% else %}✅{% endif %}
+                            {% if category == 'error' %}<i class="fa-solid fa-triangle-exclamation"></i>{% else %}<i class="fa-solid fa-check"></i>{% endif %}
                         </span>
                         {{ message }}
-                        <button class="alert-close" onclick="this.parentElement.remove()">×</button>
+                        <button class="alert-close" onclick="this.parentElement.remove()"><i class="fa-solid fa-xmark"></i></button>
                     </div>
                 {% endfor %}
             {% endif %}
@@ -57,7 +69,7 @@
 
     <!-- Footer -->
     <footer class="footer">
-        <p>Secure File Vault &mdash; Hybrid Cryptography: AES-256-GCM + RSA-3072-OAEP</p>
+        <p><i class="fa-solid fa-lock"></i> Military Grade Security &nbsp;&bull;&nbsp; Zero Knowledge &nbsp;&bull;&nbsp; Tamper Proof</p>
     </footer>
 
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>

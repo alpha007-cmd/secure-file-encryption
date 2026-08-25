@@ -3,171 +3,135 @@
 
 {% if mode == "encrypt" %}
 <!-- ─── Encryption Success ─── -->
-<section class="result-section result-success">
-    <div class="result-icon">✅</div>
-    <h1>Encryption Successful</h1>
+<div class="result-wrapper">
+    <div class="result-header">
+        <div class="icon-circle success"><i class="fa-solid fa-check"></i></div>
+        <h2>ENCRYPTION SUCCESSFUL</h2>
+        <p>Your file has been encrypted and secured.</p>
+    </div>
 
-    <div class="result-details">
-        <div class="detail-row">
-            <span class="detail-label">File:</span>
-            <span class="detail-value">{{ meta.original_filename }}</span>
+    <div class="result-data-grid">
+        <div class="data-row">
+            <span class="label">File:</span>
+            <span class="value">{{ meta.original_filename }}</span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">Original Size:</span>
-            <span class="detail-value">{{ meta.formatted_original_size }}</span>
+        <div class="data-row">
+            <span class="label">Original Size:</span>
+            <span class="value">{{ meta.formatted_original_size }}</span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">Encryption:</span>
-            <span class="detail-value">
-                <span class="badge">{{ meta.algorithm }}</span>
-            </span>
+        <div class="data-row">
+            <span class="label">Encryption:</span>
+            <span class="value"><span class="badge-pill">{{ meta.algorithm }}</span></span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">Key Protection:</span>
-            <span class="detail-value">
-                <span class="badge badge-accent">{{ meta.key_protection }}</span>
-            </span>
+        <div class="data-row">
+            <span class="label">Key Protection:</span>
+            <span class="value"><span class="badge-pill outline">{{ meta.key_protection }}</span></span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">SHA-256:</span>
-            <span class="detail-value hash-value">{{ meta.sha256 }}</span>
+        <div class="data-row hash-row">
+            <span class="label">SHA-256:</span>
+            <span class="value hash-text">{{ meta.sha256 }}</span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">Status:</span>
-            <span class="detail-value">
-                <span class="status-badge status-secure">🔒 SECURE</span>
-            </span>
+        <div class="data-row">
+            <span class="label">Status:</span>
+            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-lock"></i> SECURE</span></span>
         </div>
     </div>
 
-    <a href="{{ url_for('main.download_encrypted', filename=meta.enc_filename) }}"
-       class="btn btn-primary btn-large">
-        ⬇️ Download Encrypted File
-    </a>
-    <a href="{{ url_for('main.encrypt_page') }}" class="btn btn-secondary">
-        Encrypt Another File
-    </a>
-</section>
+    <div class="result-actions">
+        <a href="{{ url_for('main.download_encrypted', filename=meta.enc_filename) }}" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-download"></i> DOWNLOAD ENCRYPTED FILE
+        </a>
+        <a href="{{ url_for('main.encrypt_page') }}" class="btn btn-secondary btn-block mt-3">
+            ENCRYPT ANOTHER FILE
+        </a>
+    </div>
+</div>
 
 
 {% elif mode == "decrypt" %}
 <!-- ─── Decryption Success ─── -->
-<section class="result-section result-success">
-    <div class="result-icon">✅</div>
-    <h1>Decryption Successful</h1>
+<div class="result-wrapper">
+    <div class="result-header">
+        <div class="icon-circle success"><i class="fa-solid fa-check"></i></div>
+        <h2>DECRYPTION SUCCESSFUL</h2>
+        <p>File decrypted and verified successfully.</p>
+    </div>
 
-    <div class="result-details">
-        <div class="detail-row">
-            <span class="detail-label">File:</span>
-            <span class="detail-value">{{ meta.original_filename }}</span>
+    <div class="result-data-grid">
+        <div class="data-row">
+            <span class="label">File:</span>
+            <span class="value">{{ meta.original_filename }}</span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">Size:</span>
-            <span class="detail-value">{{ meta.formatted_size }}</span>
+        <div class="data-row">
+            <span class="label">Size:</span>
+            <span class="value">{{ meta.formatted_size }}</span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">AES Authentication:</span>
-            <span class="detail-value">
-                <span class="status-badge status-valid">✅ {{ meta.aes_auth }}</span>
-            </span>
+        <div class="data-row">
+            <span class="label">AES Authentication:</span>
+            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-check"></i> VALID</span></span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">SHA-256 Match:</span>
-            <span class="detail-value">
-                <span class="status-badge status-valid">✅ MATCH</span>
-            </span>
+        <div class="data-row">
+            <span class="label">SHA-256 Match:</span>
+            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-check"></i> MATCH</span></span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">Integrity:</span>
-            <span class="detail-value">
-                <span class="status-badge status-verified">🛡️ {{ meta.integrity }}</span>
-            </span>
+        <div class="data-row">
+            <span class="label">Integrity:</span>
+            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-shield-check"></i> VERIFIED</span></span>
         </div>
-        <div class="detail-row">
-            <span class="detail-label">Status:</span>
-            <span class="detail-value">
-                <span class="status-badge status-safe">✅ SAFE</span>
-            </span>
+        <div class="data-row">
+            <span class="label">Status:</span>
+            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-shield-halved"></i> SAFE</span></span>
         </div>
     </div>
 
-    <a href="{{ url_for('main.download_decrypted', filename=meta.dec_filename) }}"
-       class="btn btn-success btn-large">
-        ⬇️ Download Decrypted File
-    </a>
-    <a href="{{ url_for('main.decrypt_page') }}" class="btn btn-secondary">
-        Decrypt Another File
-    </a>
-</section>
+    <div class="result-actions">
+        <a href="{{ url_for('main.download_decrypted', filename=meta.dec_filename) }}" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-download"></i> DOWNLOAD DECRYPTED FILE
+        </a>
+        <a href="{{ url_for('main.decrypt_page') }}" class="btn btn-secondary btn-block mt-3">
+            DECRYPT ANOTHER FILE
+        </a>
+    </div>
+</div>
 
-
-{% elif mode == "tamper_detected" %}
-<!-- ─── Tampering Detected (Demo) ─── -->
-<section class="result-section result-danger">
-    <div class="result-icon">🚨</div>
-    <h1>Tampering Detected!</h1>
-    <p class="result-subtitle">Security demonstration successful</p>
-
-    <div class="result-details">
-        <div class="detail-row">
-            <span class="detail-label">AES-GCM Auth:</span>
-            <span class="detail-value">
-                <span class="status-badge status-failed">❌ FAILED</span>
-            </span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Integrity:</span>
-            <span class="detail-value">
-                <span class="status-badge status-failed">❌ FAILED</span>
-            </span>
-        </div>
-        <div class="detail-row">
-            <span class="detail-label">Decryption:</span>
-            <span class="detail-value">
-                <span class="status-badge status-failed">🛑 ABORTED</span>
-            </span>
-        </div>
+{% elif mode == "tamper_detected" or mode == "tamper_failed" %}
+<!-- ─── Tampering / Failure ─── -->
+<div class="result-wrapper">
+    <div class="result-header">
+        <div class="icon-circle danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
+        <h2>INTEGRITY FAILED</h2>
+        <p class="text-danger">{% if mode == "tamper_detected" %}Security demonstration successful.{% else %}The file is corrupted or tampered with.{% endif %}</p>
     </div>
 
-    <div class="error-detail">
-        <h3>What happened:</h3>
-        <p>One byte of the ciphertext was modified. AES-GCM detected the modification
-           and refused to decrypt the data. <strong>No output file was created.</strong></p>
+    <div class="result-data-grid">
+        <div class="data-row">
+            <span class="label">AES-GCM Auth:</span>
+            <span class="value"><span class="badge-status danger"><i class="fa-solid fa-xmark"></i> FAILED</span></span>
+        </div>
+        <div class="data-row">
+            <span class="label">Integrity:</span>
+            <span class="value"><span class="badge-status danger"><i class="fa-solid fa-xmark"></i> FAILED</span></span>
+        </div>
+        <div class="data-row">
+            <span class="label">Status:</span>
+            <span class="value"><span class="badge-status danger"><i class="fa-solid fa-ban"></i> ABORTED</span></span>
+        </div>
+    </div>
+    
+    <div class="error-terminal">
+        <div class="term-header">
+            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+            <span class="term-title">system_error.log</span>
+        </div>
         <pre>{{ error }}</pre>
     </div>
 
-    <a href="{{ url_for('main.security_page') }}" class="btn btn-primary">
-        ← Back to Security Demo
-    </a>
-</section>
-
-
-{% elif mode == "tamper_failed" %}
-<!-- ─── Integrity Check Failed (Real upload) ─── -->
-<section class="result-section result-danger">
-    <div class="result-icon">🚨</div>
-    <h1>INTEGRITY CHECK FAILED</h1>
-
-    <div class="result-details">
-        <div class="detail-row">
-            <span class="detail-label">Status:</span>
-            <span class="detail-value">
-                <span class="status-badge status-failed">❌ DECRYPTION ABORTED</span>
-            </span>
-        </div>
+    <div class="result-actions">
+        <a href="{{ url_for('main.security_page' if mode == 'tamper_detected' else 'main.decrypt_page') }}" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-arrow-left"></i> GO BACK
+        </a>
     </div>
-
-    <div class="error-detail">
-        <pre>{{ error }}</pre>
-        <p>The encrypted file may have been modified or corrupted.
-           No decrypted output was produced.</p>
-    </div>
-
-    <a href="{{ url_for('main.decrypt_page') }}" class="btn btn-primary">
-        Try Another File
-    </a>
-</section>
-
+</div>
 {% endif %}
 
 {% endblock %}

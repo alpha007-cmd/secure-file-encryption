@@ -1,41 +1,42 @@
 {% extends "base.html" %}
 {% block content %}
 
-<section class="page-header">
-    <h1>🔓 Decrypt File</h1>
+<div class="page-header">
+    <h2>DECRYPT FILE</h2>
     <p>Upload an encrypted package (.enc) to decrypt and verify integrity.</p>
-</section>
+</div>
 
-<div class="upload-section">
+<div class="action-container">
     <form method="POST" enctype="multipart/form-data" id="decryptForm">
-        <div class="upload-area" id="dropZone">
-            <div class="upload-icon">📦</div>
-            <p class="upload-text">Drag & drop an .enc file here, or click to browse</p>
-            <p class="upload-hint">Upload the encrypted package you received</p>
+        <div class="upload-box" id="dropZone">
+            <div class="upload-icon"><i class="fa-solid fa-box-archive"></i></div>
+            <p class="upload-title">DRAG & DROP .ENC FILE HERE</p>
+            <p class="upload-sub">or click to browse</p>
+            <p class="upload-limit">Upload valid encrypted package</p>
             <input type="file" name="file" id="fileInput" class="file-input" accept=".enc" required>
         </div>
 
         <div id="fileInfo" class="file-info" style="display: none;">
-            <span id="fileName"></span>
-            <span id="fileSize"></span>
+            <span id="fileName" class="file-name"><i class="fa-solid fa-file-shield"></i> <span></span></span>
+            <span id="fileSize" class="file-size"></span>
         </div>
 
-        <button type="submit" class="btn btn-success btn-large" id="decryptBtn" disabled>
-            🔓 Decrypt File
+        <button type="submit" class="btn btn-primary btn-block" id="decryptBtn" disabled>
+            <i class="fa-solid fa-lock-open"></i> DECRYPT FILE
         </button>
     </form>
 </div>
 
-<div class="info-box">
-    <h3>What happens during decryption:</h3>
-    <ol>
-        <li>The encrypted package is <strong>parsed</strong></li>
-        <li>The AES key is recovered using <strong>RSA-3072 private key</strong></li>
-        <li><strong>AES-GCM authentication</strong> verifies the data is untampered</li>
-        <li>The file is <strong>decrypted</strong></li>
-        <li><strong>SHA-256</strong> is recalculated and compared</li>
-        <li>Only if all checks pass is the file made available</li>
-    </ol>
+<div class="info-panel">
+    <h3>WHAT HAPPENS DURING DECRYPTION</h3>
+    <ul class="process-list">
+        <li><span class="num-box">1</span> The encrypted package is parsed</li>
+        <li><span class="num-box">2</span> The AES key is recovered using RSA-3072 private key</li>
+        <li><span class="num-box">3</span> AES-GCM authentication verifies the data is untampered</li>
+        <li><span class="num-box">4</span> The file is decrypted</li>
+        <li><span class="num-box">5</span> SHA-256 is recalculated and compared</li>
+        <li><span class="num-box">6</span> Only if all checks pass is the file made available</li>
+    </ul>
 </div>
 
 {% endblock %}

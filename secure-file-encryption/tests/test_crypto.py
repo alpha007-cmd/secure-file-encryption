@@ -1,8 +1,3 @@
-"""
-Tests for the cryptographic functions.
-Run with: pytest tests/test_crypto.py -v
-"""
-
 import os
 import sys
 import json
@@ -28,11 +23,6 @@ from app.crypto import (
     load_public_key_from_pem,
 )
 from app.encryption import encrypt_file, decrypt_file, create_tampered_package
-
-
-# ──────────────────────────────────────────────
-#  AES-256-GCM Tests
-# ──────────────────────────────────────────────
 
 class TestAES:
     def test_key_length(self):
@@ -128,9 +118,6 @@ class TestAES:
         assert decrypted == plaintext
 
 
-# ──────────────────────────────────────────────
-#  RSA-3072 Tests
-# ──────────────────────────────────────────────
 
 class TestRSA:
     def test_key_generation(self):
@@ -168,7 +155,6 @@ class TestRSA:
         assert decrypted == aes_key
 
     def test_wrong_private_key_fails(self):
-        """Decryption with different private key must fail."""
         priv1, pub1 = generate_rsa_key_pair()
         priv2, pub2 = generate_rsa_key_pair()
         aes_key = generate_aes_key()
@@ -179,9 +165,6 @@ class TestRSA:
             rsa_decrypt_key(encrypted, priv2)
 
 
-# ──────────────────────────────────────────────
-#  SHA-256 Tests
-# ──────────────────────────────────────────────
 
 class TestSHA256:
     def test_hash_consistency(self):
@@ -203,9 +186,6 @@ class TestSHA256:
         assert h1 != h2
 
 
-# ──────────────────────────────────────────────
-#  Integration: Full Encrypt/Decrypt Workflow
-# ──────────────────────────────────────────────
 
 class TestIntegration:
     @pytest.fixture(autouse=True)
@@ -240,7 +220,6 @@ class TestIntegration:
         assert dec_meta["integrity"] == "VERIFIED"
 
     def test_sha256_matches(self):
-        """SHA-256 of original and decrypted must match."""
         plaintext = b"Integrity test data"
         original_hash = calculate_sha256(plaintext)
 
@@ -252,13 +231,11 @@ class TestIntegration:
         assert meta["stored_sha256"] == meta["decrypted_sha256"]
 
     def test_tampered_package_fails(self):
-        """Tampered ciphertext must cause decryption failure."""
         plaintext = b"Data that will be tampered with"
 
         package_json, _ = encrypt_file(plaintext, "test.txt", self.keys_dir)
         package_bytes = package_json.encode("utf-8")
 
-        # Tamper
         tampered = create_tampered_package(package_bytes)
 
         with pytest.raises(ValueError) as exc_info:
@@ -267,19 +244,16 @@ class TestIntegration:
         assert "INTEGRITY" in str(exc_info.value) or "authentication" in str(exc_info.value).lower()
 
     def test_invalid_json_fails(self):
-        """Non-JSON data must be rejected."""
         with pytest.raises(ValueError):
             decrypt_file(b"this is not json", self.keys_dir)
 
     def test_missing_fields_fails(self):
-        """Package with missing fields must be rejected."""
         package = json.dumps({"version": 1}).encode()
         with pytest.raises(ValueError):
             decrypt_file(package, self.keys_dir)
 
     def test_binary_file(self):
-        """System should handle binary files."""
-        plaintext = os.urandom(5000)  # Random binary data
+        plaintext = os.urandom(5000)  
 
         package_json, _ = encrypt_file(plaintext, "binary.dat", self.keys_dir)
         decrypted, meta = decrypt_file(package_json.encode(), self.keys_dir)

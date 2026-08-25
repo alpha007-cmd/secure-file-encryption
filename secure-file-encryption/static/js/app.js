@@ -1,18 +1,9 @@
-/**
- * Secure File Vault – Client-side interactivity
- */
-
 document.addEventListener("DOMContentLoaded", () => {
     setupFileInputs();
     setupDragAndDrop();
-    setupFormLoading();
 });
 
-/**
- * Handle file input changes – show file info and enable submit button.
- */
 function setupFileInputs() {
-    // Encrypt & Decrypt pages
     const configs = [
         { inputId: "fileInput",        infoId: "fileInfo",        nameId: "fileName",        sizeId: "fileSize",     btnId: "encryptBtn" },
         { inputId: "fileInput",        infoId: "fileInfo",        nameId: "fileName",        sizeId: "fileSize",     btnId: "decryptBtn" },
@@ -30,9 +21,14 @@ function setupFileInputs() {
                 btn.disabled = false;
 
                 const info = document.getElementById(cfg.infoId);
-                const name = document.getElementById(cfg.nameId);
+                const nameSpan = document.getElementById(cfg.nameId);
+                
                 if (info) info.style.display = "flex";
-                if (name) name.textContent = file.name;
+                if (nameSpan) {
+                    // Update only the text span, keep the fontawesome icon
+                    const textNode = nameSpan.querySelector('span');
+                    if(textNode) textNode.textContent = file.name;
+                }
 
                 const size = document.getElementById(cfg.sizeId);
                 if (size) size.textContent = formatSize(file.size);
@@ -41,11 +37,8 @@ function setupFileInputs() {
     });
 }
 
-/**
- * Drag-and-drop support for upload areas.
- */
 function setupDragAndDrop() {
-    document.querySelectorAll(".upload-area").forEach(zone => {
+    document.querySelectorAll(".upload-box").forEach(zone => {
         ["dragenter", "dragover"].forEach(evt => {
             zone.addEventListener(evt, e => {
                 e.preventDefault();
@@ -70,40 +63,6 @@ function setupDragAndDrop() {
     });
 }
 
-/**
- * Show a loading overlay when forms are submitted.
- */
-function setupFormLoading() {
-    // Create loading overlay
-    const overlay = document.createElement("div");
-    overlay.className = "loading-overlay";
-    overlay.innerHTML = `
-        <div class="spinner"></div>
-        <div class="loading-text">Processing...</div>
-    `;
-    document.body.appendChild(overlay);
-
-    // Attach to all forms
-    document.querySelectorAll("form").forEach(form => {
-        form.addEventListener("submit", () => {
-            const btn = form.querySelector("button[type=submit]");
-            if (btn) btn.disabled = true;
-
-            // Choose label
-            let label = "Processing...";
-            if (form.id === "encryptForm")  label = "Encrypting file...";
-            if (form.id === "decryptForm")  label = "Decrypting file...";
-            if (form.id === "tamperForm")   label = "Running tampering test...";
-            overlay.querySelector(".loading-text").textContent = label;
-
-            overlay.classList.add("active");
-        });
-    });
-}
-
-/**
- * Format bytes to human-readable string.
- */
 function formatSize(bytes) {
     if (bytes < 1024) return bytes + " B";
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";

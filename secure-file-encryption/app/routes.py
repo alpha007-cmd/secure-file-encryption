@@ -144,13 +144,8 @@ def decrypt_action():
         return redirect(url_for("main.decrypt_page"))
 
 
-# ──────────────────────────────────────────────
-#  Download
-# ──────────────────────────────────────────────
-
 @main_bp.route("/download/encrypted/<filename>")
 def download_encrypted(filename):
-    """Download an encrypted package."""
     filename = safe_filename(filename)
     path = os.path.join(current_app.config["ENCRYPTED_DIR"], filename)
     if not os.path.isfile(path):
@@ -161,33 +156,23 @@ def download_encrypted(filename):
 
 @main_bp.route("/download/decrypted/<filename>")
 def download_decrypted(filename):
-    """Download a decrypted file."""
     filename = safe_filename(filename)
     path = os.path.join(current_app.config["DECRYPTED_DIR"], filename)
     if not os.path.isfile(path):
         flash("File not found.", "error")
         return redirect(url_for("main.index"))
-    # Try to use original name (part after UUID_)
     original = filename.split("_", 1)[1] if "_" in filename else filename
     return send_file(path, as_attachment=True, download_name=original)
 
 
-# ──────────────────────────────────────────────
-#  Security Demonstration
-# ──────────────────────────────────────────────
-
 @main_bp.route("/security")
 def security_page():
-    """Security architecture and demonstration page."""
     return render_template("security.html")
 
 
 @main_bp.route("/demo/tamper", methods=["POST"])
 def demo_tamper():
-    """
-    Demonstration: tamper with an encrypted file and attempt decryption.
-    Shows that AES-GCM detects modifications.
-    """
+
     if "file" not in request.files:
         flash("No file selected for tampering demo.", "error")
         return redirect(url_for("main.security_page"))
@@ -207,7 +192,6 @@ def demo_tamper():
         keys_dir = current_app.config["KEYS_DIR"]
         try:
             decrypt_file(tampered, keys_dir)
-            # Should NOT reach here
             return render_template(
                 "result.html",
                 mode="tamper_failed",
@@ -222,9 +206,6 @@ def demo_tamper():
         return redirect(url_for("main.security_page"))
 
 
-# ──────────────────────────────────────────────
-#  Error handlers
-# ──────────────────────────────────────────────
 
 @main_bp.app_errorhandler(413)
 def file_too_large(e):
