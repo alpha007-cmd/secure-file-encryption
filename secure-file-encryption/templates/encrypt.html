@@ -3,7 +3,7 @@
 
 <div class="page-header">
     <h2>ENCRYPT FILE</h2>
-    <p>Encrypt your file using AES-256-GCM with RSA-3072 key protection.</p>
+    <p>Encrypt your file using AES-256-GCM + RSA-3072 and secure it with a strong password.</p>
 </div>
 
 <div class="action-container">
@@ -21,22 +21,79 @@
             <span id="fileSize" class="file-size"></span>
         </div>
 
-        <button type="submit" class="btn btn-primary btn-block" id="encryptBtn" disabled>
+        <!-- Password -->
+        <div class="password-group">
+            <label><i class="fa-solid fa-key"></i> Set Encryption Password:</label>
+            <div class="password-input-wrap">
+                <input
+                    type="password"
+                    name="password"
+                    id="password"
+                    class="cyber-input"
+                    placeholder="Create a strong password"
+                    minlength="12"
+                    required
+                    autocomplete="new-password"
+                >
+                <button type="button" class="toggle-pass" data-target="password" aria-label="Show password">
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Confirm Password -->
+        <div class="password-group">
+            <label><i class="fa-solid fa-check-double"></i> Confirm Password:</label>
+            <div class="password-input-wrap">
+                <input
+                    type="password"
+                    name="confirm_password"
+                    id="confirm_password"
+                    class="cyber-input"
+                    placeholder="Re-enter your password"
+                    minlength="12"
+                    required
+                    autocomplete="new-password"
+                >
+                <button type="button" class="toggle-pass" data-target="confirm_password" aria-label="Show password">
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Strength meter + rules (shows when user types) -->
+        <div class="password-strength" id="passwordStrength" style="display: none;">
+            <div class="strength-header">
+                <span>Password Strength</span>
+                <span id="strengthLabel" class="strength-label">—</span>
+            </div>
+            <div class="strength-bar-track">
+                <div id="strengthBar" class="strength-bar-fill"></div>
+            </div>
+
+            <p class="rules-title" style="margin-top: 0.75rem;">
+                <i class="fa-solid fa-shield-halved"></i> Password must contain:
+            </p>
+            <ul class="strength-checklist" id="passwordRules">
+                <li id="rule-length"><i class="fa-solid fa-circle"></i> At least 12 characters</li>
+                <li id="rule-lower"><i class="fa-solid fa-circle"></i> One lowercase letter (a-z)</li>
+                <li id="rule-upper"><i class="fa-solid fa-circle"></i> One uppercase letter (A-Z)</li>
+                <li id="rule-number"><i class="fa-solid fa-circle"></i> One number (0-9)</li>
+                <li id="rule-special"><i class="fa-solid fa-circle"></i> One special character (!@#$%^&*)</li>
+                <li id="rule-match"><i class="fa-solid fa-circle"></i> Passwords match</li>
+            </ul>
+
+            <p class="strength-note">
+                <i class="fa-solid fa-circle-info"></i>
+                A strong password is required. All rules must turn green before encryption is allowed.
+            </p>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" id="encryptBtn" disabled style="margin-top: 1.25rem;">
             <i class="fa-solid fa-lock"></i> ENCRYPT FILE
         </button>
     </form>
 </div>
 
-<div class="info-panel">
-    <h3>WHAT HAPPENS DURING ENCRYPTION</h3>
-    <ul class="process-list">
-        <li><span class="num-box">1</span> A random AES-256 key (32 bytes) is generated</li>
-        <li><span class="num-box">2</span> A random 12-byte nonce is generated</li>
-        <li><span class="num-box">3</span> Your file is encrypted using AES-256-GCM</li>
-        <li><span class="num-box">4</span> SHA-256 hash of the original file is calculated</li>
-        <li><span class="num-box">5</span> The AES key is encrypted using RSA-3072-OAEP</li>
-        <li><span class="num-box">6</span> Everything is packaged into a secure .enc file</li>
-    </ul>
-</div>
 
 {% endblock %}

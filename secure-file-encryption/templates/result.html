@@ -76,7 +76,7 @@
         </div>
         <div class="data-row">
             <span class="label">Integrity:</span>
-            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-shield-check"></i> VERIFIED</span></span>
+            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-shield-cat"></i> VERIFIED</span></span>
         </div>
         <div class="data-row">
             <span class="label">Status:</span>
@@ -94,13 +94,58 @@
     </div>
 </div>
 
+
+{% elif mode == "wrong_password" %}
+<!-- ─── Wrong Password (Package Valid, Password Incorrect) ─── -->
+<div class="result-wrapper">
+    <div class="result-header">
+        <div class="icon-circle danger"><i class="fa-solid fa-key"></i></div>
+        <h2>INCORRECT PASSWORD</h2>
+        <p class="text-danger">Access Denied &mdash; The password entered is incorrect.</p>
+    </div>
+
+    <div class="result-data-grid">
+        <div class="data-row">
+            <span class="label">Encrypted Package (.enc):</span>
+            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-circle-check"></i> VALID & INTACT</span></span>
+        </div>
+        <div class="data-row">
+            <span class="label">Server RSA Key:</span>
+            <span class="value"><span class="badge-status safe"><i class="fa-solid fa-circle-check"></i> MATCHED</span></span>
+        </div>
+        <div class="data-row">
+            <span class="label">Password Check:</span>
+            <span class="value"><span class="badge-status danger"><i class="fa-solid fa-circle-xmark"></i> INCORRECT</span></span>
+        </div>
+        <div class="data-row">
+            <span class="label">Status:</span>
+            <span class="value"><span class="badge-status danger"><i class="fa-solid fa-lock"></i> LOCKED</span></span>
+        </div>
+    </div>
+
+    <!-- Informational callout box -->
+    <div class="info-panel" style="margin-bottom: 2rem; border-color: rgba(255, 170, 0, 0.4); background: rgba(255, 170, 0, 0.05);">
+        <h3 style="color: #ffaa00; margin-bottom: 0.5rem;"><i class="fa-solid fa-circle-info"></i> PACKAGE IS WORKING PERFECTLY</h3>
+        <p style="font-size: 0.95rem; color: var(--text-main); text-align: center; margin: 0;">
+            Your file is <strong>safe and uncorrupted</strong>. The key structure is intact. Simply re-upload the file and enter the <strong>correct password</strong> to decrypt it.
+        </p>
+    </div>
+
+    <div class="result-actions">
+        <a href="{{ url_for('main.decrypt_page') }}" class="btn btn-primary btn-block">
+            <i class="fa-solid fa-key"></i> TRY AGAIN WITH CORRECT PASSWORD
+        </a>
+    </div>
+</div>
+
+
 {% elif mode == "tamper_detected" or mode == "tamper_failed" %}
-<!-- ─── Tampering / Failure ─── -->
+<!-- ─── Tampering / File Corruption ─── -->
 <div class="result-wrapper">
     <div class="result-header">
         <div class="icon-circle danger"><i class="fa-solid fa-triangle-exclamation"></i></div>
-        <h2>INTEGRITY FAILED</h2>
-        <p class="text-danger">{% if mode == "tamper_detected" %}Security demonstration successful.{% else %}The file is corrupted or tampered with.{% endif %}</p>
+        <h2>INTEGRITY CHECK FAILED</h2>
+        <p class="text-danger">{% if mode == "tamper_detected" %}Security demonstration successful.{% else %}The encrypted package has been tampered with or modified.{% endif %}</p>
     </div>
 
     <div class="result-data-grid">

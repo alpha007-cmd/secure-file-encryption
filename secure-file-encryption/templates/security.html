@@ -2,69 +2,6 @@
 {% block content %}
 
 <div class="page-header">
-    <h2>SECURITY ARCHITECTURE</h2>
-    <p>How hybrid encryption protects your files.</p>
-</div>
-
-<!-- Architecture Diagram -->
-<section class="architecture-section">
-    <div class="term-window">
-        <div class="term-header">
-            <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
-            <span class="term-title">hybrid_flow.sys</span>
-        </div>
-<pre class="term-body">
-                    <span class="text-accent">RSA-3072</span>
-                   Public Key
-                       │
-                       ▼
-                Encrypt AES Key
-                       │
-                       ▼
- Original File ──► <span class="text-accent">AES-256-GCM</span> ──► Ciphertext
-                       │
-                       ▼
-                 Authentication
-                    Tag (GCM)
-                       │
-                       ▼
-                Encrypted Package
-                  (.enc file)
-</pre>
-    </div>
-</section>
-
-<!-- Explanations -->
-<section class="explanations-grid">
-    <div class="cyber-card">
-        <h3><i class="fa-solid fa-key text-accent"></i> AES-256-GCM</h3>
-        <p><strong>Purpose:</strong> Encrypts the actual file data.</p>
-        <p><strong>Why:</strong> Symmetric encryption is fast and efficient for large amounts of data.</p>
-        <p><strong>Bonus:</strong> GCM mode provides built-in authentication.</p>
-    </div>
-
-    <div class="cyber-card">
-        <h3><i class="fa-solid fa-shield text-accent"></i> RSA-3072-OAEP</h3>
-        <p><strong>Purpose:</strong> Protects the AES encryption key.</p>
-        <p><strong>Why:</strong> Asymmetric encryption is ideal for protecting small keys.</p>
-    </div>
-
-    <div class="cyber-card">
-        <h3><i class="fa-solid fa-hashtag text-accent"></i> SHA-256</h3>
-        <p><strong>Purpose:</strong> Additional integrity verification.</p>
-        <p><strong>Why:</strong> Independent hash comparison between original and decrypted files.</p>
-    </div>
-
-    <div class="cyber-card">
-        <h3><i class="fa-solid fa-microchip text-accent"></i> HYBRID</h3>
-        <p><strong>AES</strong> = Fast file encryption</p>
-        <p><strong>RSA</strong> = Secure key protection</p>
-        <p><strong>Result</strong> = Speed of symmetric + Security of asymmetric.</p>
-    </div>
-</section>
-
-<!-- Tampering Demonstration -->
-<div class="page-header mt-5">
     <h2>TAMPERING DEMONSTRATION</h2>
     <p>Upload a valid .enc file to test AES-GCM modification detection.</p>
 </div>
@@ -82,7 +19,24 @@
             <span id="tamperFileName" class="file-name"><i class="fa-solid fa-file"></i> <span></span></span>
         </div>
 
-        <button type="submit" class="btn btn-danger btn-block" id="tamperBtn" disabled>
+        <div class="password-group">
+            <label><i class="fa-solid fa-key"></i> File Password:</label>
+            <div class="password-input-wrap">
+                <input 
+                    type="password" 
+                    name="password" 
+                    id="tamperPassword" 
+                    class="cyber-input" 
+                    placeholder="Enter file password" 
+                    required
+                >
+                <button type="button" class="toggle-pass" data-target="tamperPassword" aria-label="Show password">
+                    <i class="fa-solid fa-eye"></i>
+                </button>
+            </div>
+        </div>
+
+        <button type="submit" class="btn btn-danger btn-block" id="tamperBtn" disabled style="margin-top: 1.5rem;">
             <i class="fa-solid fa-skull"></i> RUN TAMPER TEST
         </button>
     </form>
